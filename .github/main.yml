@@ -1,11 +1,11 @@
 name: Continous Integration
 on:
   push: 
-    branches: [ master ]
+    branches: [ 'master', 'dev' ]
     paths:
       - 'force-app/**'
   pull_request: 
-    branches: [ master ]
+    branches: [ 'master', 'dev' ]
     paths:
       - 'force-app/**'
   workflow_dispatch:
@@ -23,21 +23,19 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '>=14'
-          check-latest: true
 
-    - name: 'Install Salesforce CLI'
-      run: |
-        npm install sfdx-cli
-        node_modules/sfdx-cli/bin/run --version
-        node_modules/sfdx-cli/bin/run plugins --core
+      - name: Install Salesforce CLI
+        run: |
+          npm install sfdx-cli
+          node_modules/sfdx-cli/bin/run --version
+          node_modules/sfdx-cli/bin/run plugins --core
 
-    - name: 'Populate auth file'
-      shell: bash
-      run: 'echo ${{ secrets.SFDX_AUTH_URL }} > SFDX_AUTH_URL'
+      - name: Get SFDX Auth URL
+        shell: bash
+        run: 'echo ${{ secrets.SFDX_AUTH_URL }} > SFDX_AUTH_URL'
 
-    - name: 'Dev hub'
-      run: node_modules/sfdx-cli/bin/run force:auth:sfdxurl:store -f SFDX_AUTH_URL -s -a LRQA
+      - name: Authorize DevHub
+        run: node_modules/sfdx-cli/bin/run force:auth:sfdxurl:store -f SFDX_AUTH_URL -s -a LRQA
 
-    - name: 'Apex tests'
-      run: node_modules/sfdx-cli/bin/run force:apex:run:test --resultformat tap --codecoverage -c -r human
-
+      - name: Run Apex Tests
+        run: node_modules/sfdx-cli/bin/run force:apex:run:test --resultformat tap --codecoverage -c -r human
