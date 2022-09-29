@@ -1,0 +1,44 @@
+name: Continous Integration
+on:
+
+  push: 
+    branches: [master, dev]
+    paths:
+      - 'force-app/**'
+
+  pull_request: 
+    branches: [master, dev]
+    paths:
+      - 'force-app/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ GitHub.ref }}
+          fetch-depth: 0
+        if: GitHub.even.action == 'opened' || GitHub.even.action == 'synchronize' || GitHub.even.action == 'push'
+      
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '>=14'
+          check-latest: true
+
+    - name: Install Salesforce CLI
+      run: |
+        npm install sfdx-cli
+        node_modules/sfdx-cli/bin/run --version
+        node_modules/sfdx-cli/bin/run plugins --core
+
+    - name: 'Populate auth file'
+      shell: bash
+      run: 'echo ${{ secrets.SFDX_AUTH_URL }} > SFDX_AUTH_URL'
+
+    - name: Dev hub
+      run: node_modules/sfdx-cli/bin/run force:auth:sfdxurl:store -f SFDX_AUTH_URL -s -a LRQA
+
+    - name: Apex tests
+      run: node_modules/sfdx-cli/bin/run force:apex:run:test --resultformat tap --codecoverage -c -r human
+
