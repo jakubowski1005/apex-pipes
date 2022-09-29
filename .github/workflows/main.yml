@@ -18,21 +18,27 @@ jobs:
   Apex_Validation:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ GitHub.ref }}
-          fetch-depth: 0
-        if: GitHub.event.action == 'opened' || GitHub.event.action == 'synchronize' || GitHub.event.action == 'push'
-      
-      - uses: actions/setup-node@v1
-        with:
-          node-version: '>=14'
+      - name: 'Checkout source code'
+        uses: actions/checkout@v2
 
-      - name: Install Salesforce CLI
+      - name: 'Run PMD scan'
+        uses: pmd/pmd-github-action@v1.2.1
+        id: pmd
+        with:
+          sourcePath: 'force-app'
+          rulesets: 'ruleset.xml'
+
+      - name: 'Check for PMD violations'
+        if: steps.pmd.outputs.violations != 0
+        run: exit 1
+
+      - name: 'Install Salesforce CLI'
         run: |
-          npm install sfdx-cli
-          node_modules/sfdx-cli/bin/run --version
-          node_modules/sfdx-cli/bin/run plugins --core
+          wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
+          mkdir ~/sfdx
+          tar xJf sfdx-linux-x64.tar.xz -C ~/sfdx --strip-components 1
+          echo "$HOME/sfdx/bin" >> $GITHUB_PATH
+          ~/sfdx/bin/sfdx version
 
       - name: Get SFDX Auth URL
         shell: bash
