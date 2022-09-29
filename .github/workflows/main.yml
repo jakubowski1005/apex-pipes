@@ -21,17 +21,6 @@ jobs:
       - name: 'Checkout source code'
         uses: actions/checkout@v2
 
-      - name: 'Run PMD scan'
-        uses: pmd/pmd-github-action@v1.2.1
-        id: pmd
-        with:
-          sourcePath: 'force-app'
-          rulesets: 'ruleset.xml'
-
-      - name: 'Check for PMD violations'
-        if: steps.pmd.outputs.violations != 0
-        run: exit 1
-
       - name: 'Install Salesforce CLI'
         run: |
           wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
