@@ -10,5 +10,29 @@ jobs:
     steps:
       - name: 'Checkout source code'
         uses: actions/checkout@v2
+        
+      - name: 'Install Salesforce CLI'
+        run: |
+          wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
+          mkdir ~/sfdx
+          tar xJf sfdx-linux-x64.tar.xz -C ~/sfdx --strip-components 1
+          echo "$HOME/sfdx/bin" >> $GITHUB_PATH
+          ~/sfdx/bin/sfdx version
+
+      - name: Get SFDX Auth URL
+        shell: bash
+        run: 'echo ${{ secrets.SFDX_AUTH_URL }} > SFDX_AUTH_URL'
+
+      - name: Authorize Dev Hub
+        run: sfdx force:auth:sfdxurl:store -f SFDX_AUTH_URL -a devhub -d
+
+      - name: Create Scratch Org
+        run: sfdx force:org:create -f config/project-scratch-def.json -a scratch-org -s -d 1
+      
+      - name: Deploy Metadata
+        run: sfdx force:source:push
+
+      - name: Run Apex Tests
+        run: sfdx force:apex:test:run --resultformat tap --codecoverage -c -r human
 
 
