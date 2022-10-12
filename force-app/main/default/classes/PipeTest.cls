@@ -305,8 +305,12 @@ private class PipeTest {
 
     class SortNumbers implements BiFunction {
         public Object call(Object param1, Object param2) {
-            if ((Integer) param1 == (Integer) param2) return 0;
-            if ((Integer) param1 > (Integer) param2) return 1;
+            if ((Integer) param1 == (Integer) param2) {
+                return 0;
+            }
+            if ((Integer) param1 > (Integer) param2) {
+                return 1;
+            }
             return -1;
         }
     }
