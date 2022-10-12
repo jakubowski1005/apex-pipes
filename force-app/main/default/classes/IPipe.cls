@@ -6,6 +6,7 @@ public interface IPipe {
     IPipe reduce(BiFunction biFunction);
     IPipe sort(BiFunction biFunction);
     void forEach(Consumer consumer);
+    void forEach(BiConsumer biConsumer, Object param);
     Object find(Validator validator);
     Object findLast(Validator validator);
     Integer findIndex(Validator validator);
@@ -13,6 +14,7 @@ public interface IPipe {
     Boolean every(Validator validator);
     Boolean any(Validator validator);
     Map<Object, List<Object>> group(Function function);
+    Map<Object, List<Object>> group(BiFunction biFunction, Object param);
     Boolean isEmpty();
     Integer size();
 }
